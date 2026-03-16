@@ -1,3 +1,14 @@
+---
+title: Docmind Ai
+emoji: 👁
+colorFrom: pink
+colorTo: purple
+sdk: docker
+pinned: false
+license: apache-2.0
+short_description: DocMind AI is RAG base project
+---
+
 # DocMind AI 🧠
 
 DocMind AI is a production-grade **Retrieval-Augmented Generation (RAG)** backend system. It allows users to securely upload documents, semantic-search across them using pgvector, and ask natural language questions answered by Google's Gemini LLM.
@@ -100,3 +111,5 @@ FastAPI provisions an interactive Swagger UI. Once the server is running, naviga
 ## CI/CD ⚙️
 
 This project includes a fully formed `.github/workflows/ci.yml` pipeline. It spins up a temporary pgvector docker container, ensuring the integration tests run against a real PostgreSQL environment on every commit to `main`.
+
+Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference

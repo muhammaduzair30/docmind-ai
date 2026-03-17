@@ -21,3 +21,6 @@ tmp_imports.txt
 tmp_file_list.txt
 extracted_imports.txtcls
 uploaded_docs/
+
+uploaded_docs/
+*.pdf

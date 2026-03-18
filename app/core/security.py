@@ -13,8 +13,8 @@ from app.models.user import User
 load_dotenv()
 
 # Secret key and algorithm from .env
-SECRET_KEY = os.getenv("SECRET_KEY", "supersecretkey")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 1 hour
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

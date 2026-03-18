@@ -33,7 +33,7 @@ def ask(
     except HTTPException as he:
         raise he
     except Exception as e:
-        logger.error(f"Query failed for user {user.id}: {str(e)}")
+        logger.exception(f"Query failed for user {user.id}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
             detail="An error occurred while answering your question."

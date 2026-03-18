@@ -61,7 +61,7 @@ def delete_document(
         
     except Exception as e:
         db.rollback()
-        logger.error(f"Failed to delete document {document_id} for user {user.id}: {str(e)}")
+        logger.exception(f"Failed to delete document {document_id} for user {user.id}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to delete document")
     
     return None

@@ -25,5 +25,5 @@ def ask_question(db: Session, question: str, user_id: int, top_k: int = 5) -> st
         answer = generate_answer(question=question, chunks=chunks)
         return answer
     except Exception as e:
-        logger.error(f"LLM generation failed: {str(e)}")
+        logger.exception("LLM generation failed")
         raise Exception("Failed to generate answer from the AI model.")

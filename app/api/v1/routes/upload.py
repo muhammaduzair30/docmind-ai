@@ -38,13 +38,13 @@ def process_document_bg(file_path: str, document_id: int):
             logger.info(f"Background processing completed for document {document_id}")
             
         except Exception as e:
-            logger.error(f"Error processing document {document_id}: {str(e)}")
+            logger.exception(f"Error processing document {document_id}")
             
         finally:
             db.close()
             
     except Exception as e:
-        logger.error(f"Failed to start background task: {str(e)}")
+        logger.exception("Failed to start background task")
 
 
 @router.post("/", status_code=status.HTTP_202_ACCEPTED)
@@ -99,5 +99,5 @@ def upload_document(
     except HTTPException as he:
         raise he
     except Exception as e:
-        logger.error(f"Upload failed for user {user.id}: {str(e)}")
+        logger.exception(f"Upload failed for user {user.id}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error during upload")

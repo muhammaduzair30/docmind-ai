@@ -14,3 +14,4 @@ class User(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     documents = relationship("Document", back_populates="owner")
+    refresh_tokens = relationship("RefreshToken", back_populates="user", cascade="all, delete-orphan")

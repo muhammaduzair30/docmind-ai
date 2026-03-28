@@ -1,29 +1,33 @@
 from sqlalchemy.orm import Session
+from typing import Tuple, List, Dict, Any, Optional
 from app.services.retrieval_service import retrieve_chunks
 from app.services.llm_service import generate_answer
 from app.core.logging import logger
 
-def ask_question(db: Session, question: str, user_id: int, top_k: int = 5) -> str:
+def ask_question(db: Session, question: str, user_id: int, document_id: Optional[int] = None, top_k: int = 5) -> Tuple[str, List[Dict[str, Any]]]:
     """
     Full RAG pipeline orchestration:
     1. Retrieve relevant document chunks via pgvector similarity search
     2. Check if chunks were retrieved; if not, return default empty message
     3. Generate an answer using the Gemini LLM with retrieved context
-    4. Return the answer string
+    4. Return the answer string and sources
     """
 
     # Step 1: Retrieve relevant chunks
-    chunks = retrieve_chunks(db=db, question=question, user_id=user_id, top_k=top_k)
+    chunks = retrieve_chunks(db=db, question=question, user_id=user_id, document_id=document_id, top_k=top_k)
 
     # Step 2: Handle empty context immediately
     if not chunks:
         logger.info(f"No relevant chunks found for user {user_id} query: {question}")
-        return "The document does not contain this information."
+        return "The document does not contain this information.", []
+    
+    chunk_texts = [c["chunk_text"] for c in chunks]
 
     # Step 3: Generate answer using LLM
     try:
-        answer = generate_answer(question=question, chunks=chunks)
-        return answer
+        answer = generate_answer(question=question, chunks=chunk_texts)
+        return answer, chunks
     except Exception as e:
         logger.exception("LLM generation failed")
         raise Exception("Failed to generate answer from the AI model.")
+

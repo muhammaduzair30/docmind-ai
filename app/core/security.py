@@ -5,6 +5,8 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 import os
+import secrets
+import hashlib
 from dotenv import load_dotenv
 
 from app.db.database import get_db
@@ -15,7 +17,8 @@ load_dotenv()
 # Secret key and algorithm from .env
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-ACCESS_TOKEN_EXPIRE_MINUTES = 60  # 1 hour
+ACCESS_TOKEN_EXPIRE_MINUTES = 30  # 30 minutes
+REFRESH_TOKEN_EXPIRE_DAYS = 7     # 7 days
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
@@ -28,6 +31,16 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain_password, hashed_password) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
+
+
+# Token utilities
+def generate_refresh_token() -> str:
+    """Generate a secure random string for refresh token"""
+    return secrets.token_urlsafe(32)
+
+def hash_token(token: str) -> str:
+    """Hash a token using SHA-256 for secure database storage"""
+    return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
 # JWT token creation

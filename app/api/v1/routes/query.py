@@ -25,10 +25,15 @@ def ask(
         if not query_req.question or len(query_req.question.strip()) == 0:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Question cannot be empty")
             
-        logger.info(f"User {user.id} asked query: '{query_req.question}'")
-        answer = ask_question(db=db, question=query_req.question, user_id=user.id)
+        logger.info(f"User {user.id} asked query: '{query_req.question}' (doc_id: {query_req.document_id})")
+        answer, sources = ask_question(
+            db=db, 
+            question=query_req.question, 
+            user_id=user.id,
+            document_id=query_req.document_id
+        )
         
-        return {"answer": answer}
+        return {"answer": answer, "sources": sources}
         
     except HTTPException as he:
         raise he

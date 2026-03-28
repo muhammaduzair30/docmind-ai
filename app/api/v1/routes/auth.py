@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.models.user import User
-from app.schemas.user_schema import UserRegister, UserLogin, Token
-from app.core.security import hash_password, verify_password, create_access_token
+from app.schemas.user_schema import UserRegister, UserLogin, Token, RefreshTokenRequest, UserResponse
+from app.core.security import hash_password, verify_password, create_access_token, get_current_user
+from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Auth"])
 
@@ -22,16 +23,47 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(db_user)
 
-    token = create_access_token({"user_id": db_user.id})
-    return {"access_token": token, "token_type": "bearer"}
+    auth_service = AuthService(db)
+    access_token, refresh_token = auth_service._issue_tokens(db_user.id)
+    
+    return {
+        "access_token": access_token, 
+        "refresh_token": refresh_token,
+        "token_type": "bearer"
+    }
 
 
-# Login API
 @router.post("/login", response_model=Token)
 def login(user: UserLogin, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.username == user.username).first()
-    if not db_user or not verify_password(user.password, db_user.password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+    auth_service = AuthService(db)
+    access_token, refresh_token = auth_service.login(user)
+    
+    return {
+        "access_token": access_token, 
+        "refresh_token": refresh_token, 
+        "token_type": "bearer"
+    }
 
-    token = create_access_token({"user_id": db_user.id})
-    return {"access_token": token, "token_type": "bearer"}
+
+@router.post("/refresh", response_model=Token)
+def refresh(request: RefreshTokenRequest, db: Session = Depends(get_db)):
+    auth_service = AuthService(db)
+    access_token, new_refresh_token = auth_service.refresh(request.refresh_token)
+    
+    return {
+        "access_token": access_token,
+        "refresh_token": new_refresh_token,
+        "token_type": "bearer"
+    }
+
+
+@router.post("/logout")
+def logout(request: RefreshTokenRequest, db: Session = Depends(get_db)):
+    auth_service = AuthService(db)
+    auth_service.logout(request.refresh_token)
+    return {"message": "Successfully logged out"}
+
+
+@router.get("/me", response_model=UserResponse)
+def get_me(current_user: User = Depends(get_current_user)):
+    return current_user
